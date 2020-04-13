@@ -16,7 +16,6 @@
     <!-- Promise polyfill script required to use Mapbox GL Geocoder in IE 11 -->
     <script src="https://cdn.jsdelivr.net/npm/es6-promise@4/dist/es6-promise.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/es6-promise@4/dist/es6-promise.auto.min.js"></script>
-    <script src="tabletop.min.js"></script>
     <link href="https://api.mapbox.com/mapbox-assembly/v0.24.0/assembly.min.css" rel="stylesheet">
 
     <style>
@@ -27,6 +26,7 @@
         html,
         body {
             height: 100%;
+            background-color: #F0F0F0;
         }
 
         body {
@@ -70,9 +70,15 @@
             font-family: 'Barlow', sans-serif;
         }
 
-        .logo {
+        .logo-panier {
             height: 45px;
-            opacity: .8;
+            opacity: .9;
+            display: block;
+        }
+
+        .logo-anagraph {
+            height: 45px;
+            opacity: .9;
             display: block;
         }
 
@@ -117,10 +123,11 @@
 <body class="prose flex-parent">
     <div class="flex-child" id="sidebar">
         <h4>Sélectionnez un commerçant pour voir les détails</h4>
+        <a href="http://anagraph.io/" target="_blank"><img class="logo-anagraph" src="assets/logo-anagraph.svg" alt="logo"></a>
     </div>
     <div class="flex-child--grow" id="map">
         <div class="map-info">
-            <img class="logo" src="https://upload.wikimedia.org/wikipedia/commons/b/bf/Logo_panier_bleu.svg" alt="logo">
+            <a href="#" target="_blank"><img class="logo-panier" src="assets/logo-panier.svg" alt="logo"></a>
             <div class="labels">
                 <label class='switch-container'>
                     <input id="toggle-mag" type='checkbox' checked='checked' />
@@ -267,21 +274,21 @@
                 map.on('click', "Magasins & Boutiques", function (e) {
                     const description = `
 						<div>
-							<h5>${e.features[0].properties['name']}</h5>
-							<p>${e.features[0].properties['type']}</p>
-                            <p>${e.features[0].properties['address']}</p>
-                            <p>${e.features[0].properties['phone']}</p>
-                            <p>${e.features[0].properties['hours']}</p>
-                            <p>${e.features[0].properties['details']}</p>
+							<h4>${e.features[0].properties['name']}</h4>
+							<p><b>Type:</b> ${e.features[0].properties['type']}</p>
+                            <p><b>Adresse:</b> ${e.features[0].properties['address']}</p>
+                            <p><b>Téléphone:</b> ${e.features[0].properties['phone']}</p>
+                            <p><b>Heures d'ouverture:</b> ${e.features[0].properties['hours']}</p>
+                            <p><b>Détails:</b> ${e.features[0].properties['details']}</p>
 						</div>
 						<div>
-							<p>${e.features[0].properties['description']}</p>
-                            <h5>Liens:</h5>
-                            <p>Ecommerce: ${e.features[0].properties['ecommerce']}</p>
-                            <p>${e.features[0].properties['website']}</p>
-                            <p>${e.features[0].properties['facebook_url']}</p>
-                            <p>${e.features[0].properties['twitter_url']}</p>
-                            <p>${e.features[0].properties['instagram_url']}</p>
+							<p><b>Description:</b> ${e.features[0].properties['description']}</p>
+                            <h5>Liens</h5>
+                            <p><b>Ecommerce:</b> ${e.features[0].properties['ecommerce']}</p>
+                            <p><a target="_blank" href="${e.features[0].properties['website']}">Site web</a> / 
+                            <a target="_blank" href="${e.features[0].properties['facebook_url']}">Facebook</a> / 
+                            <a target="_blank" href="${e.features[0].properties['twitter_url']}">Twitter</a> / 
+                            <a target="_blank" href="${e.features[0].properties['instagram_url']}">Instagram</a></p>
 						</div>
 						`
                     document.getElementById('sidebar').innerHTML = description;
@@ -289,22 +296,22 @@
 
                 map.on('click', "Alimentation", function (e) {
                     const description = `
-                    <div>
-							<h5>${e.features[0].properties['name']}</h5>
-							<p>${e.features[0].properties['type']}</p>
-                            <p>${e.features[0].properties['address']}</p>
-                            <p>${e.features[0].properties['phone']}</p>
-                            <p>${e.features[0].properties['hours']}</p>
-                            <p>${e.features[0].properties['details']}</p>
+                        <div>
+							<h4>${e.features[0].properties['name']}</h4>
+							<p><b>Type:</b> ${e.features[0].properties['type']}</p>
+                            <p><b>Adresse:</b> ${e.features[0].properties['address']}</p>
+                            <p><b>Téléphone:</b> ${e.features[0].properties['phone']}</p>
+                            <p><b>Heures d'ouverture:</b> ${e.features[0].properties['hours']}</p>
+                            <p><b>Détails:</b> ${e.features[0].properties['details']}</p>
 						</div>
 						<div>
-							<p>${e.features[0].properties['description']}</p>
-                            <h5>Liens:</h5>
-                            <p>Ecommerce: ${e.features[0].properties['ecommerce']}</p>
-                            <p>${e.features[0].properties['website']}</p>
-                            <p>${e.features[0].properties['facebook_url']}</p>
-                            <p>${e.features[0].properties['twitter_url']}</p>
-                            <p>${e.features[0].properties['instagram_url']}</p>
+							<p><b>Description:</b> ${e.features[0].properties['description']}</p>
+                            <h5>Liens</h5>
+                            <p><b>Ecommerce:</b> ${e.features[0].properties['ecommerce']}</p>
+                            <p><a target="_blank" href="${e.features[0].properties['website']}">Site web</a> / 
+                            <a target="_blank" href="${e.features[0].properties['facebook_url']}">Facebook</a> / 
+                            <a target="_blank" href="${e.features[0].properties['twitter_url']}">Twitter</a> / 
+                            <a target="_blank" href="${e.features[0].properties['instagram_url']}">Instagram</a></p>
 						</div>
 						`
                     document.getElementById('sidebar').innerHTML = description;
@@ -312,22 +319,22 @@
 
                 map.on('click', "Restaurant", function (e) {
                     const description = `
-                    <div>
-							<h5>${e.features[0].properties['name']}</h5>
-							<p>${e.features[0].properties['type']}</p>
-                            <p>${e.features[0].properties['address']}</p>
-                            <p>${e.features[0].properties['phone']}</p>
-                            <p>${e.features[0].properties['hours']}</p>
-                            <p>${e.features[0].properties['details']}</p>
+                        <div>
+							<h4>${e.features[0].properties['name']}</h4>
+							<p><b>Type:</b> ${e.features[0].properties['type']}</p>
+                            <p><b>Adresse:</b> ${e.features[0].properties['address']}</p>
+                            <p><b>Téléphone:</b> ${e.features[0].properties['phone']}</p>
+                            <p><b>Heures d'ouverture:</b> ${e.features[0].properties['hours']}</p>
+                            <p><b>Détails:</b> ${e.features[0].properties['details']}</p>
 						</div>
 						<div>
-							<p>${e.features[0].properties['description']}</p>
-                            <h5>Liens:</h5>
-                            <p>Ecommerce: ${e.features[0].properties['ecommerce']}</p>
-                            <p>${e.features[0].properties['website']}</p>
-                            <p>${e.features[0].properties['facebook_url']}</p>
-                            <p>${e.features[0].properties['twitter_url']}</p>
-                            <p>${e.features[0].properties['instagram_url']}</p>
+							<p><b>Description:</b> ${e.features[0].properties['description']}</p>
+                            <h5>Liens</h5>
+                            <p><b>Ecommerce:</b> ${e.features[0].properties['ecommerce']}</p>
+                            <p><a target="_blank" href="${e.features[0].properties['website']}">Site web</a> / 
+                            <a target="_blank" href="${e.features[0].properties['facebook_url']}">Facebook</a> / 
+                            <a target="_blank" href="${e.features[0].properties['twitter_url']}">Twitter</a> / 
+                            <a target="_blank" href="${e.features[0].properties['instagram_url']}">Instagram</a></p>
 						</div>
 						`
                     document.getElementById('sidebar').innerHTML = description;
