@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>Le Panier Bleu X Anagraph</title>
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <script src="https://api.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.js"></script>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css?family=Barlow&display=swap" rel="stylesheet">
+    <script
+        src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.4.2/mapbox-gl-geocoder.min.js"></script>
+    <link rel="stylesheet"
+        href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.4.2/mapbox-gl-geocoder.css"
+        type="text/css" />
+    <!-- Promise polyfill script required to use Mapbox GL Geocoder in IE 11 -->
+    <script src="https://cdn.jsdelivr.net/npm/es6-promise@4/dist/es6-promise.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/es6-promise@4/dist/es6-promise.auto.min.js"></script>
+    <script src="tabletop.min.js"></script>
+    <link href="https://api.mapbox.com/mapbox-assembly/v0.24.0/assembly.min.css" rel="stylesheet">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Barlow', sans-serif;
+        }
+
+        #map {
+            height: 100%;
+        }
+
+        #sidebar {
+            width: 100%;
+            height: 33%;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 30% 30%;
+            grid-gap: 20%;
+            background-color: #F0F0F0;
+            -webkit-box-shadow: -2px -13px 43px 2px rgba(189, 189, 189, .3);
+            -moz-box-shadow: -2px -13px 43px 2px rgba(189, 189, 189, .3);
+            box-shadow: -2px -13px 43px 2px rgba(189, 189, 189, .3);
+            z-index: 3;
+
+        }
+
+        #sidebar .badge {
+            padding-left: 5px;
+            padding-right: 10px;
+            border-radius: 100%;
+            margin-right: 5px;
+        }
+
+
+        .heading {
+            font-weight: bold;
+        }
+
+        .mapboxgl-popup-content {
+            font-family: 'Barlow', sans-serif;
+        }
+
+        .logo {
+            height: 45px;
+            opacity: .8;
+            display: block;
+        }
+
+        .map-info {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 3;
+            padding: 10px;
+        }
+
+        .flex-parent {
+            flex-flow: column-reverse;
+        }
+
+        input:checked+.switch--wck-purple {
+            background-color: #1B51BC;
+        }
+
+        .switch--wck-purple {
+            color: #1B51BC;
+        }
+
+        input:checked+.switch--dot-yellow::after,
+        input:checked+.switch--yellow {
+            background-color: #FFFFFF !important;
+        }
+
+        .labels {
+            background-color: rgba(245, 245, 245, 0.70);
+            padding: 10px 10px 15px 10px;
+            display: flex;
+            flex-flow: column;
+        }
+
+        .switch-container {
+            margin-top: 8px;
+        }
+    </style>
+</head>
+
+<body class="prose flex-parent">
+    <div class="flex-child" id="sidebar">
+        <h4>Sélectionnez un commerçant pour voir les détails</h4>
+    </div>
+    <div class="flex-child--grow" id="map">
+        <div class="map-info">
+            <img class="logo" src="https://upload.wikimedia.org/wikipedia/commons/b/bf/Logo_panier_bleu.svg" alt="logo">
+            <div class="labels">
+                <label class='switch-container'>
+                    <input id="toggle-mag" type='checkbox' checked='checked' />
+                    <div class='switch switch--wck-purple switch--dot-yellow mr6'></div>
+                    <b>Magasins & Boutiques</b>
+                </label>
+                <label class='switch-container'>
+                    <input id="toggle-resto" type='checkbox' checked='checked' />
+                    <div class='switch switch--wck-purple switch--dot-yellow mr6'></div>
+                    <b>Restaurants</b>
+                </label>
+                <label class='switch-container'>
+                    <input id="toggle-alim" type='checkbox' checked='checked' />
+                    <div class='switch switch--wck-purple switch--dot-yellow mr6'></div>
+                    <b>Alimentation</b>
+                </label>
+            </div>
+        </div>
+
+    </div>
+    <script>
+        const center = [-73.7, 45.5];
+        const zoom = 10;
+        mapboxgl.accessToken = 'pk.eyJ1Ijoid2NraGJhc2UiLCJhIjoiY2p0NGc0aWkyMTRybjQ0cGh6NmhrZWdzaCJ9.Na6CPyIWu6NZ_txt0JdUIA';
+        const map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/light-v9',
+            center: center,
+            zoom: zoom
+        });
+
+        const toggleMag = document.getElementById('toggle-mag');
+        const toggleResto = document.getElementById('toggle-resto');
+        const toggleAlim = document.getElementById('toggle-alim');
+
+        const geocoder = new MapboxGeocoder({
+            accessToken: mapboxgl.accessToken,
+            countries: 'ca',
+            bbox: [-79.76, 44.99, -57.10, 62.59],
+            filter: function (item) {
+                return item.context
+                    .map(function (i) {
+                        return (
+                            i.id.split('.').shift() === 'region' &&
+                            i.text === 'Quebec'
+                        );
+                    })
+                    .reduce(function (acc, cur) {
+                        return acc || cur;
+                    });
+            },
+            mapboxgl: mapboxgl,
+            placeholder: 'Recherche par ville'
+        });
+
+        map.addControl(geocoder)
+        map.addControl(
+            new mapboxgl.GeolocateControl({
+                positionOptions: {
+                    enableHighAccuracy: false
+                },
+                trackUserLocation: false,
+                fitBoundsOptions: {
+                    maxZoom: 10
+                }
+            })
+        );
+        map.addControl(new mapboxgl.NavigationControl());
+
+        map.on('load', () => {
+            const initFeatureState = () => {
+                toggleMag.disabled = false;
+                toggleResto.disabled = false;
+                toggleAlim.disabled = false;
+
+                map.addSource("panierbleu", {
+                    type: "geojson",
+                    data: "https://raw.githubusercontent.com/smehenni/coviz/master/data/montreal-panierbleu.geojson",
+                    cluster: true,
+                    clusterMaxZoom: 8, // Max zoom to cluster points on
+                    clusterRadius: 10 // Radius of each cluster when clustering points (defaults to 50)
+                });
+
+                // Use the earthquakes source to create five layers:
+                // One for unclustered points, three for each cluster category,
+                // and one for cluster labels.
+                map.addLayer({
+                    "id": "Magasins & Boutiques",
+                    "type": "symbol",
+                    "source": "panierbleu",
+                    "filter": ["==", "type", "Magasins & Boutiques"],
+                    "layout": {
+                        "icon-image": "shop-15",
+                        "visibility": 'visible'
+                    }
+                });
+
+                map.addLayer({
+                    "id": "Alimentation",
+                    "type": "symbol",
+                    "source": "panierbleu",
+                    "filter": ["==", "type", "Alimentation"],
+                    "layout": {
+                        "icon-image": "grocery-15",
+                        "visibility": 'visible'
+                    }
+                });
+
+                map.addLayer({
+                    "id": "Restaurant",
+                    "type": "symbol",
+                    "source": "panierbleu",
+                    "filter": ["==", "type", "Restaurant"],
+                    "layout": {
+                        "icon-image": "restaurant-15",
+                        "visibility": 'visible'
+                    }
+                });
+
+                toggleMag.addEventListener('change', function (e) {
+                    if (map.getLayoutProperty("Magasins & Boutiques", 'visibility') === 'visible') {
+                        map.setLayoutProperty("Magasins & Boutiques", 'visibility', 'none');
+                    } else {
+                        map.setLayoutProperty("Magasins & Boutiques", 'visibility', 'visible');
+                    }
+                })
+
+                toggleResto.addEventListener('change', function (e) {
+                    if (map.getLayoutProperty("Restaurant", 'visibility') === 'visible') {
+                        map.setLayoutProperty("Restaurant", 'visibility', 'none');
+                    } else {
+                        map.setLayoutProperty("Restaurant", 'visibility', 'visible');
+                    }
+                })
+
+                toggleAlim.addEventListener('change', function (e) {
+                    if (map.getLayoutProperty("Alimentation", 'visibility') === 'visible') {
+                        map.setLayoutProperty("Alimentation", 'visibility', 'none');
+                    } else {
+                        map.setLayoutProperty("Alimentation", 'visibility', 'visible');
+                    }
+                })
+
+                map.on('click', "Magasins & Boutiques", function (e) {
+                    const description = `
+						<div>
+							<h5>${e.features[0].properties['name']}</h5>
+							<p>${e.features[0].properties['type']}</p>
+						</div>
+						<div>
+							<p>${e.features[0].properties['name']}</p>
+						</div>
+						`
+                    document.getElementById('sidebar').innerHTML = description;
+                });
+
+                map.on('click', "Alimentation", function (e) {
+                    const description = `
+						<div>
+							<h5>${e.features[0].properties['name']}</h5>
+							<p>${e.features[0].properties['type']}</p>
+						</div>
+						<div>
+							<p>${e.features[0].properties['name']}</p>
+						</div>
+						`
+                    document.getElementById('sidebar').innerHTML = description;
+                });
+
+                map.on('click', "Restaurant", function (e) {
+                    const description = `
+						<div>
+							<h5>${e.features[0].properties['name']}</h5>
+							<p>${e.features[0].properties['type']}</p>
+						</div>
+						<div>
+							<p>${e.features[0].properties['name']}</p>
+						</div>
+						`
+                    document.getElementById('sidebar').innerHTML = description;
+                });
+
+                map.on('mouseenter', "Magasins & Boutiques", function () {
+                    map.getCanvas().style.cursor = 'pointer';
+                });
+
+                map.on('mouseleave', "Magasins & Boutiques", function () {
+                    map.getCanvas().style.cursor = '';
+                });
+
+                map.on('mouseenter', "Alimentation", function () {
+                    map.getCanvas().style.cursor = 'pointer';
+                });
+
+                map.on('mouseleave', "Alimentation", function () {
+                    map.getCanvas().style.cursor = '';
+                });
+
+                map.on('mouseenter', "Restaurant", function () {
+                    map.getCanvas().style.cursor = 'pointer';
+                });
+
+                map.on('mouseleave', "Restaurant", function () {
+                    map.getCanvas().style.cursor = '';
+                });
+
+            }
+            initFeatureState();
+        });
+
+
+
+    </script>
+
+</body>
+
+</html>
